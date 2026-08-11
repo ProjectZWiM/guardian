@@ -58,6 +58,9 @@
     </style>
 </head>
 <body>
+    <!-- Hintergrundmusik (loop="true" sorgt dafür, dass sie in einer Schleife läuft) -->
+    <audio id="bg-audio" src="background.mp3" loop></audio>
+
     <div class="container">
         <div class="header">
             <h1>ZWiM-Guardian</h1>
@@ -87,6 +90,19 @@
     </div>
 
     <script>
+        // Versuche die Musik beim Laden direkt abzuspielen
+        window.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('bg-audio');
+            audio.play().catch(() => {
+                // Falls der Browser Autoplay blockiert, starte die Musik beim ersten Klick irgendwo auf der Seite
+                const startAudioOnClick = () => {
+                    audio.play();
+                    document.removeEventListener('click', startAudioOnClick);
+                };
+                document.addEventListener('click', startAudioOnClick);
+            });
+        });
+
         function generate() {
             let charset = "";
             if(document.getElementById('up').checked) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
