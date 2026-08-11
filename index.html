@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZWiM-Guardian | Passwort Tool</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #334155;
+            --danger: #ef4444;
+            --warning: #eab308;
+            --success: #22c55e;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .header { text-align: center; margin-bottom: 25px; }
+        h1 { font-size: 1.5rem; margin: 0; color: #fff; }
+        .version { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .section { margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border); }
+        h2 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; text-transform: uppercase; }
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border);
+            border-radius: 8px; color: #fff; box-sizing: border-box; margin-bottom: 10px;
+        }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        button {
+            width: 100%; padding: 12px; background: var(--accent); border: none;
+            border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        button:hover { background: var(--accent-hover); }
+        .strength-meter { height: 6px; background: var(--border); border-radius: 3px; margin: 15px 0; overflow: hidden; }
+        #meter-bar { height: 100%; width: 0%; transition: 0.3s; }
+        #status-text { font-size: 0.8rem; text-align: right; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ZWiM-Guardian</h1>
+            <div class="version">ProjectZWiM — vFULL_0.0.1</div>
+        </div>
+
+        <div class="generator">
+            <h2>Generator</h2>
+            <input type="range" id="len-slider" min="6" max="64" value="16" oninput="document.getElementById('len-val').innerText=this.value">
+            <div style="font-size: 0.8rem; margin-bottom: 10px;">Länge: <span id="len-val">16</span></div>
+            <div class="checkbox-grid">
+                <label><input type="checkbox" id="up" checked> A-Z</label>
+                <label><input type="checkbox" id="lo" checked> a-z</label>
+                <label><input type="checkbox" id="num" checked> 0-9</label>
+                <label><input type="checkbox" id="sym" checked> !@#</label>
+            </div>
+            <button onclick="generate()">Generieren</button>
+            <input type="text" id="out" readonly style="margin-top:15px; font-family: monospace;">
+        </div>
+
+        <div class="section">
+            <h2>Sicherheits-Check</h2>
+            <input type="password" id="check-in" oninput="check()" placeholder="Passwort eingeben...">
+            <div class="strength-meter"><div id="meter-bar"></div></div>
+            <div id="status-text">Sicherheitslevel: -</div>
+        </div>
+    </div>
+
+    <script>
+        function generate() {
+            let charset = "";
+            if(document.getElementById('up').checked) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            if(document.getElementById('lo').checked) charset += "abcdefghijklmnopqrstuvwxyz";
+            if(document.getElementById('num').checked) charset += "0123456789";
+            if(document.getElementById('sym').checked) charset += "!@#$%^&*()_+-=[]{}|;:,.<>?";
+            
+            let res = "";
+            let len = document.getElementById('len-slider').value;
+            for(let i=0; i<len; i++) res += charset.charAt(Math.floor(Math.random() * charset.length));
+            document.getElementById('out').value = res || "Wähle Optionen!";
+        }
+
+        function check() {
+            let val = document.getElementById('check-in').value;
+            let bar = document.getElementById('meter-bar');
+            let txt = document.getElementById('status-text');
+            if(!val) { bar.style.width = "0%"; txt.innerText = "Sicherheitslevel: -"; return; }
+            
+            let s = 0;
+            if(val.length > 7) s++;
+            if(val.length > 12) s++;
+            if(/[A-Z]/.test(val) && /[a-z]/.test(val)) s++;
+            if(/[0-9]/.test(val)) s++;
+            if(/[^A-Za-z0-9]/.test(val)) s++;
+            
+            let colors = ['#ef4444', '#ef4444', '#eab308', '#eab308', '#22c55e'];
+            let labels = ['Sehr schwach', 'Schwach', 'Okay', 'Sicher', 'Sehr sicher'];
+            
+            bar.style.width = (s * 20) + "%";
+            bar.style.backgroundColor = colors[s-1] || '#ef4444';
+            txt.innerText = "Sicherheitslevel: " + (labels[s-1] || "Sehr schwach");
+        }
+        generate();
+    </script>
+</body>
+</html>
