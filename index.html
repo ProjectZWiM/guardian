@@ -31,9 +31,34 @@
             overflow: hidden;
         }
 
+        /* --- FEHLER TOAST (OBEN RECHTS) --- */
+        #error-toast {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: all 0.4s var(--ease);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+        }
+        #error-toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
         /* --- BLUR & OVERLAY SYSTEM --- */
         .blur-target {
-            filter: blur(12px);
+            filter: blur(14px);
             pointer-events: none;
             user-select: none;
             transition: filter 1s var(--ease);
@@ -47,8 +72,8 @@
         #welcome-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -64,14 +89,54 @@
         .welcome-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 40px;
-            max-width: 450px;
+            max-width: 480px;
+            width: 90%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            animation: floatCard 3s ease-in-out infinite alternate;
         }
-        .welcome-card h2 { font-size: 1.5rem; margin-bottom: 15px; color: #fff; }
-        .welcome-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
+        @keyframes floatCard {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        .welcome-card h2 { 
+            font-size: 1.8rem; 
+            margin-bottom: 8px; 
+            color: #fff; 
+            letter-spacing: -0.5px;
+        }
+        .welcome-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .welcome-text-box {
+            text-align: left;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .welcome-text-box p {
+            margin: 0 0 10px 0;
+        }
+        .welcome-text-box p:last-child {
+            margin-bottom: 0;
+        }
 
         /* --- HAUPTAPP STYLING --- */
         .container {
@@ -94,16 +159,20 @@
         }
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         button {
-            width: 100%; padding: 12px; background: var(--accent); border: none;
-            border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s;
+            width: 100%; padding: 14px; background: var(--accent); border: none;
+            border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-        button:hover { background: var(--accent-hover); }
+        button:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .strength-meter { height: 6px; background: var(--border); border-radius: 3px; margin: 15px 0; overflow: hidden; }
         #meter-bar { height: 100%; width: 0%; transition: 0.3s; }
         #status-text { font-size: 0.8rem; text-align: right; color: var(--text-muted); }
     </style>
 </head>
 <body>
+
+    <!-- Fehler-Benachrichtigung Oben Rechts -->
+    <div id="error-toast">⚠️ Musik konnte nicht geladen werden (GitHub Pfad prüfen!)</div>
 
     <!-- Hintergrundmusik -->
     <audio id="bgSound" preload="auto" loop>
@@ -113,13 +182,20 @@
     <!-- Willkommens-Popup / Blur-Layer -->
     <div id="welcome-overlay">
         <div class="welcome-card">
-            <h2>ZWiM-Guardian</h2>
-            <p>Aus Überzeugung lokal, Open Source und mit ganz viel Liebe gemacht. Ein exklusives Tool der <strong>ProjectZWiM</strong> Gruppe für deine Sicherheit.</p>
-            <button onclick="initSystem()">System starten & Musik einschalten</button>
+            <h2>🛡️ ZWiM-Guardian</h2>
+            <div class="welcome-badge">ProjectZWiM Security</div>
+            
+            <div class="welcome-text-box">
+                <p>🔒 <strong>Aus Überzeugung lokal:</strong> Deine Daten bleiben da, wo sie hingehören.</p>
+                <p>💡 <strong>Open Source:</strong> Transparent, frei und frei von Bloatware.</p>
+                <p>❤️ <strong>Mit Liebe gemacht:</strong> Als Teil der exklusiven <strong>ProjectZWiM</strong> Gruppe entwickelt.</p>
+            </div>
+
+            <button onclick="initSystem()">🚀 System betreten & Sound starten</button>
         </div>
     </div>
 
-    <!-- Die eigentliche App (wird anfangs geblurred) -->
+    <!-- Die eigentliche App -->
     <div class="container blur-target">
         <div class="header">
             <h1>ZWiM-Guardian</h1>
@@ -152,14 +228,31 @@
         const bgSound = document.getElementById('bgSound');
 
         function initSystem() {
-            // Blur entfernen & Popup ausblenden
+            // 1. Visuelles UI freigeben
             document.body.classList.add('system-active');
 
-            // Audio mit sanftem Fade-In starten
+            // 2. Audio abspielen mit Fehler-Handling für GitHub Pages
             bgSound.volume = 0;
-            bgSound.play().then(() => {
-                fadeAudioIn(bgSound, 0.2, 2000);
-            }).catch(e => console.log("Audio konnte nicht automatisch gestartet werden."));
+            let playPromise = bgSound.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    fadeAudioIn(bgSound, 0.25, 2000);
+                }).catch(error => {
+                    console.warn("Audio-Fehler:", error);
+                    showErrorToast(); // Fehleranzeige oben rechts triggern
+                });
+            }
+        }
+
+        function showErrorToast() {
+            const toast = document.getElementById('error-toast');
+            toast.classList.add('show');
+
+            // Nach genau 5 Sekunden wieder ausblenden
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
         }
 
         function fadeAudioIn(audio, targetVol, duration) {
