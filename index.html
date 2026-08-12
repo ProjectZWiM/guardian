@@ -204,7 +204,7 @@
     <!-- Fehler-Benachrichtigung Oben Rechts -->
     <div id="error-toast">⚠️ Video konnte nicht geladen werden (GitHub Pfad prüfen!)</div>
 
-    <!-- Hintergrundmusik / Audio (optional, falls benötigt, hier auf Video umgestellt) -->
+    <!-- Hintergrundmusik / Audio -->
     <audio id="bgSound" preload="auto" loop>
         <source src="backround.mp3" type="audio/mpeg">
     </audio>
@@ -259,29 +259,53 @@
         const introVideo = document.getElementById('intro-video');
         const bgSound = document.getElementById('bgSound');
 
+        // Zeitspanne in Millisekunden (Hier: 7 Tage = 7 * 24 * 60 * 60 * 1000)
+        const INTRO_COOLDOWN = 7 * 24 * 60 * 60 * 1000; 
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const lastSeen = localStorage.getItem('zwim_intro_timestamp');
+            const now = new Date().getTime();
+
+            // Wenn es einen Eintrag gibt und dieser noch keine 7 Tage alt ist -> Intro überspringen
+            if (lastSeen && (now - lastSeen < INTRO_COOLDOWN)) {
+                introOverlay.style.display = 'none';
+                document.body.classList.add('system-active');
+                startBackgroundAudio();
+            }
+        });
+
         function endIntro() {
+            // Aktuellen Zeitstempel für die 7-Tage-Sperre abspeichern
+            localStorage.setItem('zwim_intro_timestamp', new Date().getTime());
+
             introOverlay.classList.add('fade-out');
             document.body.classList.add('system-active');
             
-            // Audio im Hintergrund starten (falls gewünscht)
-            bgSound.volume = 0;
-            bgSound.play().then(() => {
-                fadeAudioIn(bgSound, 0.25, 2000);
-            }).catch(e => console.log("Audio Autoplay blockiert:", e));
+            startBackgroundAudio();
 
             setTimeout(() => {
                 introOverlay.style.display = 'none';
             }, 1200);
         }
 
-        // Wenn das Video zu Ende ist
+        function startBackgroundAudio() {
+            bgSound.volume = 0;
+            bgSound.play().then(() => {
+                fadeAudioIn(bgSound, 0.25, 2000);
+            }).catch(e => console.log("Audio Autoplay blockiert:", e));
+        }
+
+        // Wenn das Video regulär zu Ende läuft
         introVideo.addEventListener('ended', endIntro);
 
         // Fallback falls Autoplay hakt
         introVideo.play().catch(e => {
             console.log("Video Autoplay blockiert oder Fehler:", e);
-            showErrorToast();
-            endIntro();
+            if (localStorage.getItem('zwim_intro_timestamp')) {
+                endIntro();
+            } else {
+                showErrorToast();
+            }
         });
 
         function initSystem() {
