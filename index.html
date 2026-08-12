@@ -28,7 +28,32 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- INTRO VIDEO OVERLAY --- */
+        #intro-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
             overflow: hidden;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: fill; 
+        }
+
+        .fade-out {
+            opacity: 0 !important;
+            pointer-events: none;
         }
 
         /* --- FEHLER TOAST (OBEN RECHTS) --- */
@@ -171,10 +196,15 @@
 </head>
 <body>
 
-    <!-- Fehler-Benachrichtigung Oben Rechts -->
-    <div id="error-toast">⚠️ Musik konnte nicht geladen werden (GitHub Pfad prüfen!)</div>
+    <!-- INTRO VIDEO OVERLAY -->
+    <div id="intro-overlay">
+        <video id="intro-video" src="37373.mp4" playsinline muted autoplay></video>
+    </div>
 
-    <!-- Hintergrundmusik -->
+    <!-- Fehler-Benachrichtigung Oben Rechts -->
+    <div id="error-toast">⚠️ Video konnte nicht geladen werden (GitHub Pfad prüfen!)</div>
+
+    <!-- Hintergrundmusik / Audio (optional, falls benötigt, hier auf Video umgestellt) -->
     <audio id="bgSound" preload="auto" loop>
         <source src="backround.mp3" type="audio/mpeg">
     </audio>
@@ -191,7 +221,7 @@
                 <p>❤️ <strong>Mit Liebe gemacht:</strong> Als Teil der exklusiven <strong>ProjectZWiM</strong> Gruppe entwickelt.</p>
             </div>
 
-            <button onclick="initSystem()">🚀 System betreten & Sound starten</button>
+            <button onclick="initSystem()">🚀 System betreten</button>
         </div>
     </div>
 
@@ -225,31 +255,42 @@
     </div>
 
     <script>
+        const introOverlay = document.getElementById('intro-overlay');
+        const introVideo = document.getElementById('intro-video');
         const bgSound = document.getElementById('bgSound');
 
-        function initSystem() {
-            // 1. Visuelles UI freigeben
+        function endIntro() {
+            introOverlay.classList.add('fade-out');
             document.body.classList.add('system-active');
-
-            // 2. Audio abspielen mit Fehler-Handling für GitHub Pages
+            
+            // Audio im Hintergrund starten (falls gewünscht)
             bgSound.volume = 0;
-            let playPromise = bgSound.play();
+            bgSound.play().then(() => {
+                fadeAudioIn(bgSound, 0.25, 2000);
+            }).catch(e => console.log("Audio Autoplay blockiert:", e));
 
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    fadeAudioIn(bgSound, 0.25, 2000);
-                }).catch(error => {
-                    console.warn("Audio-Fehler:", error);
-                    showErrorToast(); // Fehleranzeige oben rechts triggern
-                });
-            }
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+            }, 1200);
+        }
+
+        // Wenn das Video zu Ende ist
+        introVideo.addEventListener('ended', endIntro);
+
+        // Fallback falls Autoplay hakt
+        introVideo.play().catch(e => {
+            console.log("Video Autoplay blockiert oder Fehler:", e);
+            showErrorToast();
+            endIntro();
+        });
+
+        function initSystem() {
+            endIntro();
         }
 
         function showErrorToast() {
             const toast = document.getElementById('error-toast');
             toast.classList.add('show');
-
-            // Nach genau 5 Sekunden wieder ausblenden
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 5000);
