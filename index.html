@@ -31,6 +31,43 @@
             overflow-x: hidden;
         }
 
+        /* --- DEZENTER PROJEKT-FAMILIEN BADGE (OBEN RECHTS) --- */
+        #zwim-family-banner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(10px);
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.2s, color 0.2s;
+        }
+        #zwim-family-banner:hover {
+            border-color: var(--accent);
+            color: var(--text-color);
+        }
+        #zwim-family-banner a {
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            transition: background 0.2s;
+        }
+        #zwim-family-banner a:hover {
+            background: var(--accent-hover);
+        }
+
         /* --- INTRO VIDEO OVERLAY --- */
         #intro-overlay {
             position: fixed;
@@ -56,11 +93,11 @@
             pointer-events: none;
         }
 
-        /* --- FEHLER TOAST (OBEN RECHTS) --- */
+        /* --- FEHLER TOAST (OBEN RECHTS - UNTER DEM BANNER) --- */
         #error-toast {
             position: fixed;
-            top: 25px;
-            right: 25px;
+            top: 75px;
+            right: 20px;
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid var(--danger);
             color: #fca5a5;
@@ -196,6 +233,12 @@
 </head>
 <body>
 
+    <!-- DEZENTES PROJEKT-FAMILIEN BADGE -->
+    <div id="zwim-family-banner">
+        <span>Teil der ZWiM Familie</span>
+        <a href="https://projectzwim.github.io/home/" target="_blank">Entdecken</a>
+    </div>
+
     <!-- INTRO VIDEO OVERLAY -->
     <div id="intro-overlay">
         <video id="intro-video" src="37373.mp4" playsinline muted autoplay></video>
@@ -259,14 +302,14 @@
         const introVideo = document.getElementById('intro-video');
         const bgSound = document.getElementById('bgSound');
 
-        // Zeitspanne in Millisekunden (Hier: 7 Tage = 7 * 24 * 60 * 60 * 1000)
-        const INTRO_COOLDOWN = 7 * 24 * 60 * 60 * 1000; 
+        // Zeitspanne auf 4 Tage gesetzt (4 * 24 * 60 * 60 * 1000)
+        const INTRO_COOLDOWN = 4 * 24 * 60 * 60 * 1000; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const lastSeen = localStorage.getItem('zwim_intro_timestamp');
             const now = new Date().getTime();
 
-            // Wenn es einen Eintrag gibt und dieser noch keine 7 Tage alt ist -> Intro überspringen
+            // Wenn es einen Eintrag gibt und dieser noch keine 4 Tage alt ist -> Intro überspringen
             if (lastSeen && (now - lastSeen < INTRO_COOLDOWN)) {
                 introOverlay.style.display = 'none';
                 document.body.classList.add('system-active');
@@ -275,7 +318,7 @@
         });
 
         function endIntro() {
-            // Aktuellen Zeitstempel für die 7-Tage-Sperre abspeichern
+            // Aktuellen Zeitstempel für die 4-Tage-Sperre abspeichern
             localStorage.setItem('zwim_intro_timestamp', new Date().getTime());
 
             introOverlay.classList.add('fade-out');
